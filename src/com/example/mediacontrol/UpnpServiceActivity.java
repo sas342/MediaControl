@@ -82,11 +82,11 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_upnp_service);
 		
-		controllers.add(new MediaServerControl());
+		controllers.add(new MediaServerControl(this));
 		
 		
 		//bind to the service		       
-        getApplicationContext().bindService(new Intent(this, AndroidUpnpServiceImpl.class), serviceConnection, Context.BIND_AUTO_CREATE);
+		getApplicationContext().bindService(new Intent(this, AndroidUpnpServiceImpl.class), serviceConnection, Context.BIND_AUTO_CREATE);
         
 		//setup tabs
 		ActionBar actionBar = this.getActionBar();
@@ -99,9 +99,13 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		}
 		
 		progressBar = (ProgressBar) this.findViewById(R.id.progressBar);
+		
+		
 	}
 	
 	private void findMenuOptions() {
+		if (!currentServer.hasActions()) return;
+		
 		upnpService.getControlPoint().execute(new Browse(currentServer, "0", BrowseFlag.DIRECT_CHILDREN){
 
 			@Override
@@ -116,7 +120,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 				}
 				
 				//search default category
-				String id = menu.get("artist");
+				String id = menu.get("Artists");
 				lookupContent(id);
 			}
 
@@ -238,6 +242,10 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
             deviceRemoved(device);
         }
 
+        @Override
+        public void deviceAdded(Registry registry, Device device) {
+        	deviceAdded(device);
+        }
         @Override
         public void localDeviceAdded(Registry registry, LocalDevice device) {
             deviceAdded(device);

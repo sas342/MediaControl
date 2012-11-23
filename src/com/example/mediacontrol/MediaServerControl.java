@@ -16,6 +16,10 @@ public class MediaServerControl implements MediaController {
 		public void onSetCurrentService(Service service);
 	}
 	
+	public MediaServerControl(MediaServerListener listener) {
+		this.listener = listener;
+	}
+	
 	@Override
 	public void deviceAdded(Device device) {
 		for (Service<Device, Service> serv : device.getServices()) {
