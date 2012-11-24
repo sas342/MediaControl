@@ -7,7 +7,11 @@
     tools:context=".UpnpServiceActivity" >
 
     
-    
+    <fragment android:name="com.example.mediacontrol.MediaFragment"
+              android:id="@+id/media_fragment"
+              android:layout_weight="1"
+              android:layout_width="0dp"
+              android:layout_height="match_parent" />
 	
     <ProgressBar
          android:layout_width="wrap_content"

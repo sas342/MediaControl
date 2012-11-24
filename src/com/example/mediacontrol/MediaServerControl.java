@@ -32,7 +32,7 @@ public class MediaServerControl implements MediaController {
 					servers.add(dd);
 				}
 				
-				if (currentService == null) {
+				if (currentService == null && serv.hasActions()) {
 					currentService = serv;
 					listener.onSetCurrentService(currentService);
 				}

@@ -32,13 +32,14 @@ import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.ActionBar.TabListener;
 import android.app.Activity;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -53,6 +54,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	private List<MediaController> controllers = new ArrayList<MediaController>();
 	private Map<String, String> menu = new HashMap<String, String>();
 		
+	private IMediaFragment fragment;
 
 	AndroidUpnpService upnpService;
 	BrowseRegistryListener listener = new BrowseRegistryListener();
@@ -87,7 +89,8 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		
 		//bind to the service		       
 		getApplicationContext().bindService(new Intent(this, AndroidUpnpServiceImpl.class), serviceConnection, Context.BIND_AUTO_CREATE);
-        
+        		
+		
 		//setup tabs
 		ActionBar actionBar = this.getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -106,6 +109,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	private void findMenuOptions() {
 		if (!currentServer.hasActions()) return;
 		
+		/**
 		upnpService.getControlPoint().execute(new Browse(currentServer, "0", BrowseFlag.DIRECT_CHILDREN){
 
 			@Override
@@ -137,38 +141,58 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 				
 			}
 			
-		});
+		});*/
+		
+		menu.put("Artists", "6");
+		menu.put("Albums", "7");
+		menu.put("Videos", "2");
+		menu.put("Playlists", "12");
+		
+		//search default category
+		String id = menu.get("Artists");
+		lookupContent("4");
+		
 	}
-	private void lookupContent(String id) {
-		upnpService.getControlPoint().execute(new Browse(currentServer, id, BrowseFlag.DIRECT_CHILDREN){
-
-			@Override
-			public void received(ActionInvocation arg0, DIDLContent content) {
-				List<ContentDisplay> list = new ArrayList<ContentDisplay>();
-				for (Container c : content.getContainers()) {
-					list.add(new ContentDisplay(c));
-				}
-				for (Item i : content.getItems()) {
-					list.add(new ContentDisplay(i));
-				}
-				
-				//send list to fragment
-			}
-
-			@Override
-			public void updateStatus(Status arg0) {
-				// TODO Auto-generated method stub
-				System.out.println(arg0.name());
-			}
-
-			@Override
-			public void failure(ActionInvocation arg0, UpnpResponse arg1,
-					String arg2) {
-				// TODO Auto-generated method stub
-				
-			}
+	private void lookupContent(final String id) {
+		
+		if (currentServer != null) {
+			runOnUiThread(new Runnable() {
+	            public void run() {
+					upnpService.getControlPoint().execute(new Browse(currentServer, id, BrowseFlag.DIRECT_CHILDREN){
 			
-		});
+						@Override
+						public void received(ActionInvocation arg0, DIDLContent content) {
+							List<ContentDisplay> list = new ArrayList<ContentDisplay>();
+							for (Container c : content.getContainers()) {
+								list.add(new ContentDisplay(c));
+							}
+							for (Item i : content.getItems()) {
+								list.add(new ContentDisplay(i));
+							}
+							
+							//send list to fragment
+							((IMediaFragment)findViewById(R.id.media_fragment)).setContent(list);
+							
+							progressBar.setVisibility(View.INVISIBLE);
+						}
+			
+						@Override
+						public void updateStatus(Status arg0) {
+							// TODO Auto-generated method stub
+							System.out.println(arg0.name());
+						}
+			
+						@Override
+						public void failure(ActionInvocation arg0, UpnpResponse arg1,
+								String arg2) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+					});
+	            }
+            });
+		}
 	}
 
 	@Override
@@ -191,23 +215,29 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 
 	public class UpnpTabListener implements TabListener {
 
+		
+
 		@Override
-		public void onTabReselected(Tab arg0, FragmentTransaction arg1) {
-			// TODO Auto-generated method stub
+		public void onTabReselected(Tab arg0,
+				android.app.FragmentTransaction arg1) {
+			
+			lookupContent(menu.get(arg0.getText().toString()));
+		}
+
+		@Override
+		public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
+			lookupContent(menu.get(tab.getText().toString()));
 			
 		}
 
 		@Override
-		public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		public void onTabUnselected(Tab tab, android.app.FragmentTransaction ft) {
 			// TODO Auto-generated method stub
 			
 		}
-
-		@Override
-		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-			// TODO Auto-generated method stub
-			
-		}
+		
+		
+		
 		
 	}
 	
