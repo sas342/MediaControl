@@ -1,10 +1,11 @@
 package com.example.mediacontrol;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
-import android.support.v4.app.ListFragment;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,24 +14,45 @@ import android.widget.ListView;
 
 public class MediaFragment extends ListFragment implements IMediaFragment{
 	
+	
+	public MediaFragment() {
+		content = new ArrayList<ContentDisplay>();
+	}
+	
 	public interface IMediaListener {
 		void onContentSelected(ContentDisplay content);
 	}
 	
+	
+	private List<ContentDisplay> content;
 	private ArrayAdapter<ContentDisplay> adapter;
 	private IMediaListener mCallback;
 	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
+		inflater.inflate(R.layout.fragment_media, container, false);
+				        
 		return super.onCreateView(inflater, container, savedInstanceState);
+		
+	}
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		adapter = new ArrayAdapter<ContentDisplay>(this.getActivity(), android.R.layout.simple_list_item_1);
+		adapter.addAll(content);
+        this.setListAdapter(adapter);
+        
+        
 	}
 	
 	@Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         
-        // This makes sure that the container activity has implemented
+     // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
             mCallback = (IMediaListener) activity;
@@ -39,15 +61,13 @@ public class MediaFragment extends ListFragment implements IMediaFragment{
                     + " must implement OnHeadlineSelectedListener");
         }
         
-        adapter = new ArrayAdapter<ContentDisplay>(this.getActivity(), android.R.layout.simple_list_item_1);
-        this.setListAdapter(adapter);
+        
     }
 
 	@Override
 	public void setContent(List<ContentDisplay> content) {
-		// TODO Auto-generated method stub
-		adapter.clear();
-		adapter.addAll(content);
+		this.content.clear();
+		this.content.addAll(content);
 	}
 
 	@Override
