@@ -34,6 +34,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.mediacontrol.MediaFragment.IMediaListener;
@@ -49,6 +50,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	private List<MediaController> controllers = new ArrayList<MediaController>();
 	private Map<String, String> menu = new HashMap<String, String>();
 	private MediaFragment currentFragment;
+	private TextView label;
 	
 	AndroidUpnpService upnpService;
 	BrowseRegistryListener listener = new BrowseRegistryListener();
@@ -85,6 +87,8 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		getApplicationContext().bindService(new Intent(this, AndroidUpnpServiceImpl.class), serviceConnection, Context.BIND_AUTO_CREATE);
         		
 		progressBar = (ProgressBar) this.findViewById(R.id.progressBar);
+		
+		label = (TextView) findViewById(R.id.label);
 		
 		//setup tabs
 		ActionBar actionBar = this.getActionBar();
@@ -148,7 +152,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		
 	}
 	private void lookupContent(final String id) {
-		
+		label.setText("lookupContent "+id);
 		if (currentServer != null) {
 			runOnUiThread(new Runnable() {
 	            public void run() {
@@ -168,13 +172,14 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 							((IMediaFragment)currentFragment).setContent(list);
 							
 							progressBar.setVisibility(View.INVISIBLE);
-							
+							label.setText("Recieved: "+list.size());
 						}
 			
 						@Override
 						public void updateStatus(Status arg0) {
 							// TODO Auto-generated method stub
 							System.out.println(arg0.name());
+							label.setText("Update: "+arg0.name());
 						}
 			
 						@Override
@@ -182,6 +187,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 								String arg2) {
 							// TODO Auto-generated method stub
 							System.out.println(arg2);
+							label.setText("Error: "+arg2);
 							
 						}
 						
@@ -308,6 +314,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	@Override
 	public void onSetCurrentService(Service service) {
 		this.currentServer = service;
+		label.setText("service found");
 		this.findMenuOptions();		
 	}
 
