@@ -15,26 +15,42 @@ import android.widget.ListView;
 public class MediaFragment extends ListFragment implements IMediaFragment{
 	
 	
-	public MediaFragment() {
-		content = new ArrayList<ContentDisplay>();
-	}
+	
 	
 	public interface IMediaListener {
 		void onContentSelected(ContentDisplay content);
 	}
 	
 	
-	private List<ContentDisplay> content;
+	//private List<ContentDisplay> content;
 	private ArrayAdapter<ContentDisplay> adapter;
 	private IMediaListener mCallback;
 	
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, 
         Bundle savedInstanceState) {
-		inflater.inflate(R.layout.fragment_media, container, false);
-				        
+		//inflater.inflate(R.layout.fragment_media, container, false);
+			System.out.println("fragment view created");	        
 		return super.onCreateView(inflater, container, savedInstanceState);
 		
+	}
+	
+	@Override
+	public void onDestroyView() {
+		System.out.println("fragment view destroyed");
+		super.onDestroyView();
+	}
+	
+	@Override
+	public void onDestroy() {
+		System.out.println("fragment destoryed");
+		super.onDestroy();
+	}
+	
+	@Override
+	public void onDetach() {
+		System.out.println("fragment detached");
+		super.onDetach();
 	}
 	
 	@Override
@@ -42,7 +58,7 @@ public class MediaFragment extends ListFragment implements IMediaFragment{
 		super.onCreate(savedInstanceState);
 		
 		adapter = new ArrayAdapter<ContentDisplay>(this.getActivity(), android.R.layout.simple_list_item_1);
-		adapter.addAll(content);
+		//adapter.addAll(content);
         this.setListAdapter(adapter);
         
         
@@ -66,8 +82,16 @@ public class MediaFragment extends ListFragment implements IMediaFragment{
 
 	@Override
 	public void setContent(List<ContentDisplay> content) {
-		this.content.clear();
-		this.content.addAll(content);
+		//this.content.clear();
+		//this.content.addAll(content);
+		
+		
+		if (adapter != null) {			
+			adapter.clear();
+			adapter.addAll(content);
+			System.out.println("recieved "+content.size());
+		}
+		
 	}
 
 	@Override

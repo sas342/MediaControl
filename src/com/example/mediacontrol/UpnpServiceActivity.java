@@ -9,6 +9,7 @@ import org.teleal.cling.android.AndroidUpnpService;
 import org.teleal.cling.android.AndroidUpnpServiceImpl;
 import org.teleal.cling.model.action.ActionInvocation;
 import org.teleal.cling.model.message.UpnpResponse;
+import org.teleal.cling.model.message.header.STAllHeader;
 import org.teleal.cling.model.meta.Device;
 import org.teleal.cling.model.meta.LocalDevice;
 import org.teleal.cling.model.meta.RemoteDevice;
@@ -42,7 +43,7 @@ import com.example.mediacontrol.MediaServerControl.MediaServerListener;
 
 public class UpnpServiceActivity extends FragmentActivity implements MediaServerListener, IMediaListener {
 
-	ProgressBar progressBar;
+	//ProgressBar progressBar;
 	private String[] categories = new String[]{"Artists", "Albums", "Playlists", "Videos"};
 	private UpnpTabListener tabListener = new UpnpTabListener();
 	private Service currentServer;
@@ -50,7 +51,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	private List<MediaController> controllers = new ArrayList<MediaController>();
 	private Map<String, String> menu = new HashMap<String, String>();
 	private MediaFragment currentFragment;
-	private TextView label;
+	//private TextView label;
 	
 	AndroidUpnpService upnpService;
 	BrowseRegistryListener listener = new BrowseRegistryListener();
@@ -65,7 +66,7 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 			}
 			
 			upnpService.getRegistry().addListener(listener);			
-			upnpService.getControlPoint().search();
+			upnpService.getControlPoint().search(new STAllHeader());
 
 		}
 
@@ -86,9 +87,9 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		//bind to the service		       
 		getApplicationContext().bindService(new Intent(this, AndroidUpnpServiceImpl.class), serviceConnection, Context.BIND_AUTO_CREATE);
         		
-		progressBar = (ProgressBar) this.findViewById(R.id.progressBar);
+		//progressBar = (ProgressBar) this.findViewById(R.id.progressBar);
 		
-		label = (TextView) findViewById(R.id.label);
+		//label = (TextView) findViewById(R.id.label);
 		
 		//setup tabs
 		ActionBar actionBar = this.getActionBar();
@@ -152,48 +153,78 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 		
 	}
 	private void lookupContent(final String id) {
-		label.setText("lookupContent "+id);
+		//label.setText("lookupContent "+id);
 		if (currentServer != null) {
-			runOnUiThread(new Runnable() {
-	            public void run() {
+			//runOnUiThread(new Runnable() {
+	          //  public void run() {
 					upnpService.getControlPoint().execute(new Browse(currentServer, id, BrowseFlag.DIRECT_CHILDREN){
 			
 						@Override
-						public void received(ActionInvocation arg0, DIDLContent content) {
-							List<ContentDisplay> list = new ArrayList<ContentDisplay>();
-							for (Container c : content.getContainers()) {
+						public void received(ActionInvocation arg0, final DIDLContent content) {
+							
+							/**for (Container c : content.getContainers()) {
 								list.add(new ContentDisplay(c));
 							}
 							for (Item i : content.getItems()) {
 								list.add(new ContentDisplay(i));
-							}
+							}*/
+							runOnUiThread(new Runnable(){
+
+								@Override
+								public void run() {
+									List<ContentDisplay> list = new ArrayList<ContentDisplay>();
+									for (Container c : content.getContainers()) {
+										list.add(new ContentDisplay(c));
+									}
+									for (Item i : content.getItems()) {
+										list.add(new ContentDisplay(i));
+									}
+									//List<ContentDisplay> smallList = list.subList(0, 10);
+									//smallList.add(new ContentDisplay(content.getContainers().get(0)));
+									
+									//Container c = new Container();
+									//c.setTitle("test");
+									//smallList.add(new ContentDisplay(c));
+									//send list to fragment
+									//((IMediaFragment)currentFragment).setContent(smallList);
+									//currentFragment = (MediaFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+									System.out.println("setting content");
+									((IMediaFragment)currentFragment).setContent(list);
+									//getSupportFragmentManager().beginTransaction().replace(R.id.container, currentFragment).addToBackStack(null).commit();
+									System.out.println("Added: "+currentFragment.isAdded());
+									System.out.println("Detached: "+currentFragment.isDetached());
+									System.out.println("Hidden"+ currentFragment.isHidden());
+									System.out.println("Resumed: "+currentFragment.isResumed());
+									System.out.println("Visible: "+currentFragment.isVisible());
+									//getFragmentManager().beginTransaction().show(getSupportFragmentManager().findFragmentById(R.id.fragment)).commit();
+								//	progressBar.setVisibility(View.INVISIBLE);
+			//						label.setText("Recieved: "+list.size());
+									
+								}
+								
+							});
 							
-							//send list to fragment
-							((IMediaFragment)currentFragment).setContent(list);
-							
-							progressBar.setVisibility(View.INVISIBLE);
-							label.setText("Recieved: "+list.size());
 						}
 			
 						@Override
 						public void updateStatus(Status arg0) {
 							// TODO Auto-generated method stub
-							System.out.println(arg0.name());
-							label.setText("Update: "+arg0.name());
+			//				System.out.println(arg0.name());
+							//label.setText("Update: "+arg0.name());
 						}
 			
 						@Override
 						public void failure(ActionInvocation arg0, UpnpResponse arg1,
 								String arg2) {
 							// TODO Auto-generated method stub
-							System.out.println(arg2);
-							label.setText("Error: "+arg2);
+				//			System.out.println(arg2);
+//							label.setText("Error: "+arg2);
 							
 						}
 						
 					});
-	            }
-            });
+	            //}
+            //});
 		}
 	}
 
@@ -226,13 +257,22 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 
 		@Override
 		public void onTabSelected(Tab tab, android.app.FragmentTransaction ft) {
+			
+			//currentFragment = (MediaFragment) getSupportFragmentManager().findFragmentById(R.id.fragment);
+			currentFragment = new MediaFragment();			
+			getSupportFragmentManager().beginTransaction().replace(R.id.container, currentFragment).addToBackStack(null).commit();
+			
+			
 			if (menu.containsKey(tab.getText().toString())) {
 				lookupContent(menu.get(tab.getText().toString()));
 			}
 			
-			currentFragment = new MediaFragment();			
-			getSupportFragmentManager().beginTransaction().replace(R.id.container, currentFragment).commit();
-						
+			//List<ContentDisplay> list = new ArrayList<ContentDisplay>();
+			//Container c = new Container();
+			//c.setTitle("title");
+			//c.setId("id");
+			//list.add(new ContentDisplay(c));
+			//((IMediaFragment)currentFragment).setContent(list);
 		}
 
 		@Override
@@ -314,13 +354,17 @@ public class UpnpServiceActivity extends FragmentActivity implements MediaServer
 	@Override
 	public void onSetCurrentService(Service service) {
 		this.currentServer = service;
-		label.setText("service found");
+		//label.setText("service found");
 		this.findMenuOptions();		
 	}
 
 	@Override
 	public void onContentSelected(ContentDisplay content) {
 		//lookup or play
+		System.out.println(content.getId());
+		currentFragment = new MediaFragment();
+		getSupportFragmentManager().beginTransaction().replace(R.id.container, currentFragment).addToBackStack(null).commit();
+		
 		lookupContent(content.getId());		
 	}
 }

@@ -19,7 +19,7 @@ public class ContentDisplay {
 		this.parentId = item.getParentID();
 		this.id = item.getId();
 		this.title = item.getTitle();
-		this.location = item.getResources().get(0).getImportUri().toString();
+		//this.location = item.getResources().get(0).getImportUri().toString();
 	}
 
 	public String getParentId() {
